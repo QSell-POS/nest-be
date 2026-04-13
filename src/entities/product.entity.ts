@@ -1,6 +1,17 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import { Shop } from "./shop.entity";
 
-@Entity()
+@Entity("products")
+@Index(["shopId", "sku"], { unique: true })
 export class Product {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -8,30 +19,31 @@ export class Product {
   @Column()
   shopId: string;
 
+  @ManyToOne(() => Shop, (shop) => shop.products, { onDelete: "CASCADE" })
+  @JoinColumn({ name: "shopId" })
+  shop: Shop;
+
   @Column()
   name: string;
 
-  @Column({ nullable: true })
-  description: string;
-
-  @Column({ unique: true })
+  @Column()
   sku: string;
 
-  @Column({ nullable: true })
-  barcode: string;
+  description?: string;
+  barcode?: string;
 
   @Column({ default: "pcs" })
   unit: string;
 
-  @Column("decimal", { precision: 10, scale: 2 })
-  sellingPrice: number;
-
-  @Column("decimal", { precision: 10, scale: 2 })
-  costPrice: number;
-
-  @Column({ default: 0 })
+  @Column({ type: "int", default: 0 })
   lowStockAlert: number;
 
   @Column({ default: true })
   isActive: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

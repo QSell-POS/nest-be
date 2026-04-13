@@ -1,6 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { Product } from "./product.entity";
+import { Purchase } from "./purchase.entity";
 
-@Entity()
+@Entity("shops")
 export class Shop {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -10,4 +12,10 @@ export class Shop {
 
   @Column({ default: "" })
   name: string;
+
+  @OneToMany(() => Product, (product) => product.shop)
+  products: Product[];
+
+  @OneToMany(() => Purchase, (purchase) => purchase.shop)
+  purchases: Purchase[];
 }

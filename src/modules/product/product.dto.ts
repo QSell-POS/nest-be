@@ -32,14 +32,6 @@ export class ProductDto {
   @IsString()
   unit: string;
 
-  @IsNotEmpty()
-  @IsNumber()
-  sellingPrice: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  costPrice: number;
-
   @IsNumber()
   lowStockAlert: number;
 

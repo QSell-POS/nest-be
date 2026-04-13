@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { ProductService } from "./product.service";
 import { AuthGuard } from "@nestjs/passport";
 import { ProductDto } from "./product.dto";
@@ -8,10 +16,11 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  getProducts() {
+  async getProducts() {
+    const products = await this.productService.getProducts();
     return {
-      message: "Product API working 🚀",
-      data: [],
+      message: "Product list retrieved successfully",
+      data: products,
     };
   }
 
@@ -19,5 +28,12 @@ export class ProductController {
   @UseGuards(AuthGuard("jwt"))
   createProduct(@Body() body: ProductDto, @Req() req: any) {
     return this.productService.create(body);
+  }
+
+  @Delete(":id")
+  @UseGuards(AuthGuard("jwt"))
+  deleteProduct(@Req() req: any) {
+    console.log(req.params.id);
+    return this.productService.deleteProduct(req.params.id);
   }
 }
