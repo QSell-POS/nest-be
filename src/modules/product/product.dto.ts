@@ -10,16 +10,16 @@ import {
 
 export class ProductDto {
   @IsUUID()
-  @IsNotEmpty()
   shopId: string;
 
   @IsUUID()
-  @IsNotEmpty()
   brandId: string;
 
   @IsUUID()
-  @IsNotEmpty()
   categoryId: string;
+
+  @IsUUID()
+  baseUnitId: string;
 
   @IsNotEmpty()
   @MinLength(3)
@@ -36,13 +36,18 @@ export class ProductDto {
   @IsString()
   barcode: string;
 
-  @IsOptional()
-  @IsString()
-  unit: string;
+  @IsNumber()
+  sellingPrice: number;
 
   @IsNumber()
-  lowStockAlert: number;
+  stockThreshold: number;
 
   @IsOptional()
   isActive: boolean;
+
+  @IsNumber()
+  quantity: number;
+
+  @IsNumber()
+  costPrice: number;
 }

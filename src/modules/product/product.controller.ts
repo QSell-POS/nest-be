@@ -7,6 +7,7 @@ import {
   Delete,
   UseGuards,
   Controller,
+  BadRequestException,
 } from "@nestjs/common";
 
 import { ProductDto } from "./product.dto";

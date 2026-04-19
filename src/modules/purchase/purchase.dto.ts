@@ -37,10 +37,6 @@ export class PurchaseDto {
   items: PurchaseItemDto[];
 
   @IsOptional()
-  @IsNumber()
-  totalAmount?: number;
-
-  @IsOptional()
   @IsString()
   supplierName?: string;
 

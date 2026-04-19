@@ -6,12 +6,15 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { Shop } from "./shop.entity";
+import { Unit } from "./unit.entity";
 import { Brand } from "./brand.entity";
 import { Category } from "./category.entity";
+import { Inventory } from "./inventory.entity";
 
 @Entity("products")
 @Index(["shopId", "sku"], { unique: true })
@@ -42,6 +45,11 @@ export class Product {
   @JoinColumn({ name: "categoryId" })
   category: Category;
 
+  @OneToOne(() => Inventory, (inventory) => inventory.product, {
+    onDelete: "CASCADE",
+  })
+  inventory: Inventory;
+
   @Column()
   name: string;
 
@@ -51,11 +59,17 @@ export class Product {
   description?: string;
   barcode?: string;
 
-  @Column({ default: "pcs" })
-  unit: string;
+  @Column()
+  baseUnitId: string;
+
+  @ManyToOne(() => Unit, (unit) => unit.products, { onDelete: "CASCADE" })
+  baseUnit: Unit;
 
   @Column({ type: "int", default: 0 })
-  lowStockAlert: number;
+  stockThreshold: number;
+
+  @Column("decimal", { precision: 10, scale: 2 })
+  sellingPrice: number;
 
   @Column({ default: true })
   isActive: boolean;

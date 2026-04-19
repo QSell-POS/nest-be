@@ -26,10 +26,8 @@ export class BrandService {
   async fetchOne(id: string) {
     const brand = await this.brands.findOne({
       where: { id },
-      relations: ["shop"],
     });
     if (!brand) throw new NotFoundException("Brand not found");
-
     return brand;
   }
 

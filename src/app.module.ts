@@ -3,12 +3,15 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+
 import { AuthModule } from "./modules/auth/auth.module";
 import { ShopModule } from "./modules/shop/shop.module";
 import { ProductModule } from "./modules/product/product.module";
 import { PurchaseModule } from "./modules/purchase/purchase.module";
-import { BrandModule } from "./modules/brand/brand.module";
 import { CategoryModule } from "./modules/category/category.module";
+import { BrandModule } from "./modules/brand/brand.module";
+import { UnitModule } from "./modules/unit/unit.module";
+import { InventoryModule } from "./modules/inventory/inventory.module";
 
 @Module({
   imports: [
@@ -34,7 +37,9 @@ import { CategoryModule } from "./modules/category/category.module";
     BrandModule,
     ProductModule,
     CategoryModule,
+    UnitModule,
     PurchaseModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -8,12 +8,15 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Shop } from "src/entities/shop.entity";
 import { Product } from "src/entities/product.entity";
-import { Repository } from "typeorm";
+import { Repository, DataSource } from "typeorm";
 import { ProductDto } from "./product.dto";
+import { StockType } from "src/entities/inventory.entity";
 
 @Injectable()
 export class ProductService {
   constructor(
+    private readonly dataSource: DataSource,
+
     @InjectRepository(Shop)
     private shops: Repository<Shop>,
     @InjectRepository(Product)
@@ -21,7 +24,24 @@ export class ProductService {
   ) {}
 
   async getProducts() {
-    return this.products.find();
+    const products = await this.products.find({
+      relations: ["baseUnit", "inventory"],
+    });
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      description: product.description,
+      barcode: product.barcode,
+      sellingPrice: product.sellingPrice,
+      stockThreshold: product.stockThreshold,
+      isActive: product.isActive,
+      baseUnitName: product.baseUnit.name,
+      baseUnitCode: product.baseUnit.code,
+      stockInBaseUnit: product.inventory
+        ? product.inventory.stockInBaseUnit
+        : 0,
+    }));
   }
 
   async getProductById(id: string) {
@@ -30,22 +50,39 @@ export class ProductService {
       relations: ["shop", "brand", "category"],
     });
     if (!product) throw new NotFoundException("Product not found");
-
     return product;
   }
 
   async create(data: ProductDto) {
     try {
-      const shop = await this.shops.findOne({
-        where: { id: data.shopId },
+      const { costPrice, quantity = 0, ...rest } = data;
+      return await this.dataSource.transaction(async (manager) => {
+        // Create product
+        const product = manager.create(Product, rest);
+        await manager.save(product);
+
+        // Initialize inventory
+        const inventory = manager.create("Inventory", {
+          shopId: data.shopId,
+          productId: product.id,
+          stockInBaseUnit: quantity || 0,
+        });
+        await manager.save(inventory);
+
+        // Log inventory ledger if initial quantity is provided
+        if (quantity > 0) {
+          const log = manager.create("InventoryLedger", {
+            shopId: data.shopId,
+            productId: product.id,
+            type: StockType.OPENING,
+            quantityChange: quantity,
+            description: `Initial stock with cost price ${costPrice}`,
+          });
+
+          await manager.save(log);
+        }
+        return product;
       });
-
-      if (!shop) {
-        throw new BadRequestException("Shop does not exist");
-      }
-
-      const product = this.products.create(data);
-      return await this.products.save(product);
     } catch (error: any) {
       if (error.code === "23503") {
         throw new BadRequestException("Shop does not exist");
