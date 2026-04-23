@@ -1,7 +1,12 @@
-import { ParseUUIDPipe } from "@nestjs/common";
+import { BadRequestException, ParseUUIDPipe } from '@nestjs/common';
 
 export class UuidParamPipe extends ParseUUIDPipe {
-  constructor() {
-    super({ version: "4" });
+  constructor(paramName = 'id') {
+    super({
+      version: '4',
+      exceptionFactory: () => {
+        return new BadRequestException(`${paramName} must be a valid UUID (v4)`);
+      },
+    });
   }
 }

@@ -1,9 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  BadRequestException,
-} from "@nestjs/common";
+import { ExceptionFilter, Catch, ArgumentsHost, BadRequestException } from '@nestjs/common';
 
 @Catch(BadRequestException)
 export class ValidationFilter implements ExceptionFilter {
@@ -17,14 +12,14 @@ export class ValidationFilter implements ExceptionFilter {
 
     if (Array.isArray(res.message)) {
       res.message.forEach((msg: string) => {
-        const field = msg.split(" ")[0];
+        const field = msg.split(' ')[0];
         formattedErrors[field] = msg;
       });
     }
 
     response.status(400).json({
       statusCode: 400,
-      message: "Bad Request",
+      message: 'Bad Request',
       errors: formattedErrors,
     });
   }

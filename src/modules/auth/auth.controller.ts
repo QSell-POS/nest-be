@@ -1,31 +1,47 @@
-import type { Response } from "express";
-import { AuthService } from "./auth.service";
-import { SigninDto, SignupDto } from "./auth.dto";
-import { Body, Post, Controller, Res } from "@nestjs/common";
+import { AuthService } from './auth.service';
+import { CurrentUser, JwtAuthGuard, Public } from 'src/common/guards/auth.guard';
+import { ChangePasswordDto, LoginDto, RefreshTokenDto, RegisterDto } from './auth.dto';
+import { Body, Post, Controller, UseGuards, HttpStatus, HttpCode, Get } from '@nestjs/common';
 
-@Controller("auth")
+@Controller('auth')
+@UseGuards(JwtAuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post("signup")
-  async register(@Body() body: SignupDto) {
-    return this.authService.signup(body);
+  @Public()
+  @Post('signup')
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
 
-  @Post("signin")
-  async login(
-    @Body() body: SigninDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const token = await this.authService.signin(body);
+  @Public()
+  @Post('signin')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
 
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24,
-    });
+  @Public()
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Body() dto: RefreshTokenDto) {
+    return this.authService.refreshToken(dto);
+  }
 
-    return { message: "Login success" };
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@CurrentUser() user: any) {
+    return this.authService.logout(user.id);
+  }
+
+  @Get('me')
+  async getProfile(@CurrentUser() user: any) {
+    return this.authService.getProfile(user.id);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@CurrentUser() user: any, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(user.id, dto);
   }
 }
