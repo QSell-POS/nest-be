@@ -52,8 +52,11 @@ export class PurchasesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific purchase' })
-  findOne(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
-    return this.purchasesService.findOne(id, user.shopId);
+  async findOne(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
+    const purchaseOrder = await this.purchasesService.findOne(id, user.shopId);
+    return {
+      data: purchaseOrder,
+    };
   }
 
   @Post()

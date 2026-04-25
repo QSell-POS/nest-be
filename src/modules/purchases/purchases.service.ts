@@ -11,6 +11,8 @@ import { CreatePurchaseDto, CreatePurchaseReturnDto, CreateSupplierDto, ReceiveP
 import { InventoryMovementType } from '../inventory/entities/inventory-history.entity';
 import { PurchaseItem } from './entities/purchase-item.entity';
 import { PaymentStatus, Purchase, PurchaseStatus } from './entities/purchase.entity';
+import { IncomeExpenseService } from '../income-expense/income-expense.service';
+import { IncomeExpenseCategory, TransactionType } from '../income-expense/entities/income-expense.entity';
 
 @Injectable()
 export class PurchasesService {
@@ -27,7 +29,7 @@ export class PurchasesService {
     private supplierRepository: Repository<Supplier>,
     private inventoryService: InventoryService,
     private productsService: ProductsService,
-    // private incomeExpenseService: IncomeExpenseService,
+    private incomeExpenseService: IncomeExpenseService,
     private dataSource: DataSource,
   ) {}
 
@@ -40,7 +42,11 @@ export class PurchasesService {
   async getSuppliers(shopId: string, search?: string) {
     const qb = this.supplierRepository.createQueryBuilder('s').where('s.shopId = :shopId', { shopId });
     if (search) qb.andWhere('s.name ILIKE :search', { search: `%${search}%` });
-    return qb.orderBy('s.name', 'ASC').getMany();
+    const suppliers = await qb.orderBy('s.name', 'ASC').getMany();
+    return {
+      data: suppliers,
+      message: 'suppliers data',
+    };
   }
 
   async updateSupplier(id: string, dto: UpdateSupplierDto, shopId: string) {
@@ -219,18 +225,18 @@ export class PurchasesService {
       });
 
       // Record expense
-      // await this.incomeExpenseService.create(
-      //   {
-      //     transactionType: TransactionType.EXPENSE,
-      //     category: IncomeExpenseCategory.PURCHASE,
-      //     title: `Purchase received: ${purchase.referenceNumber}`,
-      //     amount: purchase.grandTotal,
-      //     referenceId: purchase.id,
-      //     referenceType: 'purchase',
-      //   },
-      //   shopId,
-      //   userId,
-      // );
+      await this.incomeExpenseService.create(
+        {
+          transactionType: TransactionType.EXPENSE,
+          category: IncomeExpenseCategory.PURCHASE,
+          title: `Purchase received: ${purchase.referenceNumber}`,
+          amount: purchase.grandTotal,
+          referenceId: purchase.id,
+          referenceType: 'purchase',
+        },
+        shopId,
+        userId,
+      );
 
       await queryRunner.commitTransaction();
       return this.findOne(id, shopId);

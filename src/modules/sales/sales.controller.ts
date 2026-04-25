@@ -24,8 +24,9 @@ export class SalesController {
 
   @Get('customers/:id')
   @ApiOperation({ summary: 'Get customer by ID' })
-  getCustomer(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.salesService.getCustomer(id, user.shopId);
+  async getCustomer(@Param('id') id: string, @CurrentUser() user: any) {
+    const customer = await this.salesService.getCustomer(id, user.shopId);
+    return { data: customer };
   }
 
   @Post('customers')
@@ -50,8 +51,9 @@ export class SalesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get sale details by ID' })
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.salesService.findOne(id, user.shopId);
+  async findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    const sale = await this.salesService.findOne(id, user.shopId);
+    return { data: sale };
   }
 
   @Post()

@@ -9,8 +9,8 @@ import { InventoryService } from '../inventory/inventory.service';
 import { InventoryMovementType } from '../inventory/entities/inventory-history.entity';
 import { ProductsService } from '../products/products.service';
 import { PriceType } from '../products/entities/product-price.entity';
-// import { IncomeExpenseService } from '../income-expense/income-expense.service';
-// import { TransactionType, IncomeExpenseCategory } from '../income-expense/entities/income-expense.entity';
+import { IncomeExpenseService } from '../income-expense/income-expense.service';
+import { TransactionType, IncomeExpenseCategory } from '../income-expense/entities/income-expense.entity';
 
 @Injectable()
 export class SalesService {
@@ -27,7 +27,7 @@ export class SalesService {
     private customerRepository: Repository<Customer>,
     private inventoryService: InventoryService,
     private productsService: ProductsService,
-    // private incomeExpenseService: IncomeExpenseService,
+    private incomeExpenseService: IncomeExpenseService,
     private dataSource: DataSource,
   ) {}
 
@@ -178,19 +178,19 @@ export class SalesService {
         }
       }
 
-      //   // Record income
-      //   await this.incomeExpenseService.create(
-      //     {
-      //       transactionType: TransactionType.INCOME,
-      //       category: IncomeExpenseCategory.SALES_REVENUE,
-      //       title: `Sale: ${invoiceNumber}`,
-      //       amount: grandTotal,
-      //       referenceId: savedSale.id,
-      //       referenceType: 'sale',
-      //     },
-      //     shopId,
-      //     userId,
-      //   );
+      // Record income
+      await this.incomeExpenseService.create(
+        {
+          transactionType: TransactionType.INCOME,
+          category: IncomeExpenseCategory.SALES_REVENUE,
+          title: `Sale: ${invoiceNumber}`,
+          amount: grandTotal,
+          referenceId: savedSale.id,
+          referenceType: 'sale',
+        },
+        shopId,
+        userId,
+      );
 
       return this.findOne(savedSale.id, shopId);
     } catch (err) {
@@ -335,19 +335,19 @@ export class SalesService {
       status: SaleStatus.PARTIAL_REFUND,
     });
 
-    // // Record income reduction
-    // await this.incomeExpenseService.create(
-    //   {
-    //     transactionType: TransactionType.EXPENSE,
-    //     category: IncomeExpenseCategory.RETURN_INCOME,
-    //     title: `Sale Return: ${refNum}`,
-    //     amount: totalAmount,
-    //     referenceId: savedReturn.id,
-    //     referenceType: 'sale_return',
-    //   },
-    //   shopId,
-    //   userId,
-    // );
+    // Record income reduction
+    await this.incomeExpenseService.create(
+      {
+        transactionType: TransactionType.EXPENSE,
+        category: IncomeExpenseCategory.RETURN_INCOME,
+        title: `Sale Return: ${refNum}`,
+        amount: totalAmount,
+        referenceId: savedReturn.id,
+        referenceType: 'sale_return',
+      },
+      shopId,
+      userId,
+    );
 
     return savedReturn;
   }

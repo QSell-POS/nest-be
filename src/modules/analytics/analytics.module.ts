@@ -1,0 +1,27 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Sale, SaleItem } from '../sales/entities/sale.entity';
+import { Purchase } from '../purchases/entities/purchase.entity';
+import { InventoryItem } from '../inventory/entities/inventory-item.entity';
+import { Product } from '../products/entities/product.entity';
+import { ProductPrice } from '../products/entities/product-price.entity';
+import { IncomeExpense } from '../income-expense/entities/income-expense.entity';
+import { AnalyticsService } from './analytics.service';
+import { AnalyticsController } from './analytics.controller';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([
+      Sale,
+      SaleItem,
+      Purchase,
+      InventoryItem,
+      Product,
+      ProductPrice,
+      IncomeExpense,
+    ]),
+  ],
+  controllers: [AnalyticsController],
+  providers: [AnalyticsService],
+})
+export class AnalyticsModule {}

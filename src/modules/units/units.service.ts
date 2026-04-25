@@ -8,8 +8,12 @@ import { CreateUnitDto, UpdateUnitDto } from './dto/unit.dto';
 export class UnitsService {
   constructor(@InjectRepository(Unit) private repo: Repository<Unit>) {}
 
-  findAll(shopId: string) {
-    return this.repo.find({ where: { shopId }, order: { name: 'ASC' } });
+  async findAll(shopId: string) {
+    const unitsData = await this.repo.find({ where: { shopId }, order: { name: 'ASC' } });
+    return {
+      data: unitsData,
+      message: 'Units fetched',
+    };
   }
 
   async findOne(id: string, shopId: string) {

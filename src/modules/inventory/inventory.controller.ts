@@ -22,8 +22,9 @@ export class InventoryController {
 
   @Get('low-stock')
   @ApiOperation({ summary: 'Get low stock products' })
-  getLowStock(@CurrentUser() user: any) {
-    return this.inventoryService.getLowStockProducts(user.shopId);
+  async getLowStock(@CurrentUser() user: any) {
+    const lowStocks = await this.inventoryService.getLowStockProducts(user.shopId);
+    return { data: lowStocks, message: 'low stock products' };
   }
 
   @Get('history')

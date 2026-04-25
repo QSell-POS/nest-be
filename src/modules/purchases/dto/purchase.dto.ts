@@ -30,6 +30,7 @@ export class CreatePurchaseItemDto {
   discountRate?: number;
 
   @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   notes?: string;
 }

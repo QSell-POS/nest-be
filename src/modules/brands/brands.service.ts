@@ -12,10 +12,14 @@ export class BrandsService {
     private brands: Repository<Brand>,
   ) {}
 
-  findAll(shopId: string, search?: string) {
+  async findAll(shopId: string, search?: string) {
     const qb = this.brands.createQueryBuilder('b').where('b.shopId = :shopId', { shopId });
     if (search) qb.andWhere('b.name ILIKE :search', { search: `%${search}%` });
-    return qb.orderBy('b.name', 'ASC').getMany();
+    const data = await qb.orderBy('b.name', 'ASC').getMany();
+    return {
+      data,
+      message: 'Brands fetch successful',
+    };
   }
 
   async findOne(id: string, shopId: string) {

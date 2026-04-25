@@ -7,14 +7,14 @@ import { SalesService } from './sales.service';
 import { SalesController } from './sales.controller';
 import { InventoryModule } from '../inventory/inventory.module';
 import { ProductsModule } from '../products/products.module';
-// import { IncomeExpenseModule } from '../income-expense/income-expense.module';
+import { IncomeExpenseModule } from '../income-expense/income-expense.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Sale, SaleItem, SaleReturn, SaleReturnItem, Customer]),
     InventoryModule,
     ProductsModule,
-    // IncomeExpenseModule,
+    IncomeExpenseModule,
   ],
   controllers: [SalesController],
   providers: [SalesService],

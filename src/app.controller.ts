@@ -42,7 +42,7 @@ export class AppController {
 
       <body>
         <elements-api
-          apiDescriptionUrl="https://anaerobic-finalize-geiger.ngrok-free.dev/api/v1/docs-json"
+          apiDescriptionUrl="http://localhost:5000/api/v1/docs-json"
           router="hash"
           layout="sidebar"
         />

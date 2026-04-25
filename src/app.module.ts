@@ -12,8 +12,8 @@ import { ProductsModule } from './modules/products/products.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { PurchasesModule } from './modules/purchases/purchases.module';
 import { SalesModule } from './modules/sales/sales.module';
-// import { AnalyticsModule } from './modules/analytics/analytics.module';
-// import { IncomeExpenseModule } from './modules/income-expense/income-expense.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { IncomeExpenseModule } from './modules/income-expense/income-expense.module';
 
 // Entities
 import { User } from './modules/users/entities/user.entity';
@@ -32,7 +32,7 @@ import { PurchaseReturn, PurchaseReturnItem } from './modules/purchases/entities
 import { Customer } from './modules/sales/entities/customer.entity';
 import { Sale, SaleItem } from './modules/sales/entities/sale.entity';
 import { SaleReturn, SaleReturnItem } from './modules/sales/entities/sale-return.entity';
-// import { IncomeExpense } from './modules/income-expense/entities/income-expense.entity';
+import { IncomeExpense } from './modules/income-expense/entities/income-expense.entity';
 
 import { appConfig, databaseConfig, jwtConfig } from './config/app.config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -83,7 +83,7 @@ import { AppController } from './app.controller';
           SaleItem,
           SaleReturn,
           SaleReturnItem,
-          // IncomeExpense,
+          IncomeExpense,
         ],
       }),
     }),
@@ -97,8 +97,8 @@ import { AppController } from './app.controller';
     InventoryModule,
     PurchasesModule,
     SalesModule,
-    // IncomeExpenseModule,
-    // AnalyticsModule,
+    IncomeExpenseModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
