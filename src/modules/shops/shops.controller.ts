@@ -19,7 +19,7 @@ export class ShopsController {
     return this.shopsService.findAll();
   }
 
-  @Get('mine')
+  @Get('me')
   @ApiOperation({ summary: "Get current user's shop" })
   getMyShop(@CurrentUser() user: any) {
     if (!user.shopId) {
@@ -31,8 +31,10 @@ export class ShopsController {
   @Get(':id')
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get a shop by ID (super admin only)' })
-  findOne(@Param('id') id: string) {
-    return this.shopsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return {
+      data: await this.shopsService.findOne(id),
+    };
   }
 
   @Post()

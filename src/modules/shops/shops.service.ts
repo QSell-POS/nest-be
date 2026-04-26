@@ -28,7 +28,9 @@ export class ShopsService {
     return this.shops.save(Object.assign(s, dto));
   }
 
-  getMyShop(shopId: string) {
-    return this.findOne(shopId);
+  async getMyShop(shopId: string) {
+    return {
+      data: await this.findOne(shopId),
+    };
   }
 }

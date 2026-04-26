@@ -1,6 +1,7 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { TenantBaseEntity } from 'src/common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from 'src/modules/users/entities/user.entity';
 
 export enum TransactionType {
   INCOME = 'income',
@@ -63,10 +64,14 @@ export class IncomeExpense extends TenantBaseEntity {
   attachment: string;
 
   @ApiProperty()
-  @Column({ name: 'recorded_by', nullable: true })
-  recordedBy: string;
-
-  @ApiProperty()
   @Column({ nullable: true, type: 'text' })
   notes: string;
+
+  @ApiProperty()
+  @Column({ name: 'recorded_by' })
+  recordedBy: string;
+
+  @ManyToOne(() => User, (user) => user.transactions)
+  @JoinColumn({ name: 'recorded_by' })
+  recordedByUser: User;
 }

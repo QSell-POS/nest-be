@@ -71,10 +71,11 @@ export class AppController {
           }
         </style>
       </head>
-
+      <!--  https://anaerobic-finalize-geiger.ngrok-free.dev/api/v1/docs-json -->
+      <!--  http://localhost:5000/api/v1/docs-json -->
       <body>
         <elements-api
-          apiDescriptionUrl="http://localhost:5000/api/v1/docs-json"
+          apiDescriptionUrl="https://anaerobic-finalize-geiger.ngrok-free.dev/api/v1/docs-json"
           router="hash"
           layout="sidebar"
         />

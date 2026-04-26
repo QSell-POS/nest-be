@@ -23,8 +23,10 @@ export class ProductsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get product by ID' })
-  findOne(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
-    return this.productsService.findOne(id, user.shopId);
+  async findOne(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
+    return {
+      data: await this.productsService.findOne(id, user.shopId),
+    };
   }
 
   @Get('barcode/:barcode')
