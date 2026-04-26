@@ -366,7 +366,23 @@ export class SalesService {
   private async generateInvoiceNumber(shopId: string): Promise<string> {
     const date = new Date();
     const yyyymmdd = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
-    const count = await this.saleRepository.count({ where: { shopId } });
+
+    // start of today
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    // end of today
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    const count = await this.saleRepository
+      .createQueryBuilder('s')
+      .where('s.shopId = :shopId', { shopId })
+      .andWhere('s.saleDate BETWEEN :start AND :end', {
+        start,
+        end,
+      })
+      .getCount();
+
     return `INV-${yyyymmdd}-${String(count + 1).padStart(5, '0')}`;
   }
 

@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { TenantBaseEntity } from 'src/common/entities/base.entity';
 import { Customer } from './customer.entity';
+import { Product } from 'src/modules/products/entities/product.entity';
 
 export enum SaleStatus {
   DRAFT = 'draft',
@@ -93,7 +94,7 @@ export class SaleItem extends TenantBaseEntity {
   @Column({ name: 'sale_id' })
   saleId: string;
 
-  @Column({ name: 'product_id' })
+  @Column({ name: 'product_id', type: 'uuid' })
   productId: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
@@ -126,4 +127,8 @@ export class SaleItem extends TenantBaseEntity {
   @ManyToOne(() => Sale, (sale) => sale.items)
   @JoinColumn({ name: 'sale_id' })
   sale: Sale;
+
+  @ManyToOne(() => Product, (product) => product.saleItems)
+  @JoinColumn({ name: 'product_id' })
+  product: Product;
 }

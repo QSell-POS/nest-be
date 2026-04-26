@@ -5,6 +5,7 @@ import { TenantBaseEntity } from 'src/common/entities/base.entity';
 import { Category } from 'src/modules/categories/entities/category.entity';
 import { InventoryItem } from 'src/modules/inventory/entities/inventory-item.entity';
 import { ProductPrice } from './product-price.entity';
+import { SaleItem } from 'src/modules/sales/entities/sale.entity';
 
 export enum ProductStatus {
   ACTIVE = 'active',
@@ -109,4 +110,7 @@ export class Product extends TenantBaseEntity {
 
   @OneToMany(() => InventoryItem, (inventory) => inventory.product)
   inventoryItems: InventoryItem[];
+
+  @OneToMany(() => SaleItem, (saleItem) => saleItem.product)
+  saleItems: SaleItem[];
 }

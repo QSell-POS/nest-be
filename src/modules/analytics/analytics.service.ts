@@ -176,15 +176,29 @@ export class AnalyticsService {
         shopId,
         cancelled: SaleStatus.CANCELLED,
       })
-      .innerJoin('si.sale', 'sale')
-      .leftJoinAndMapOne('si.productInfo', Product, 'p', 'p.id = si.productId')
-      .select('si.productId', 'productId')
+      .leftJoin('si.product', 'p')
+      .leftJoin('p.brand', 'brand')
+      .leftJoin('p.category', 'category')
+      .leftJoin('p.unit', 'unit')
+
+      .select('p.id', 'productId')
+      .addSelect('p.name', 'productName')
+      .addSelect('p.sku', 'sku')
+      .addSelect('brand.name', 'brandName')
+      .addSelect('category.name', 'categoryName')
+      .addSelect('unit.symbol', 'unitSymbol')
+
       .addSelect('SUM(si.quantity)', 'totalQuantity')
       .addSelect('SUM(si.subtotal)', 'totalRevenue')
       .addSelect('SUM(si.profit)', 'totalProfit')
       .addSelect('COUNT(DISTINCT s.id)', 'orderCount')
-      .groupBy('si.productId')
-      .orderBy('totalQuantity', 'DESC')
+
+      .groupBy('p.id')
+      .addGroupBy('brand.id')
+      .addGroupBy('category.id')
+      .addGroupBy('unit.id')
+
+      .orderBy('SUM(si.quantity)', 'DESC')
       .limit(limit);
 
     if (startDate) qb.andWhere('s.saleDate >= :startDate', { startDate });
@@ -192,24 +206,20 @@ export class AnalyticsService {
 
     const rows = await qb.getRawMany();
 
-    // Enrich with product info
-    const productIds = rows.map((r) => r.productId);
-    const products = productIds.length
-      ? await this.productRepository
-          .createQueryBuilder('p')
-          .leftJoinAndSelect('p.brand', 'brand')
-          .leftJoinAndSelect('p.unit', 'unit')
-          .whereInIds(productIds)
-          .getMany()
-      : [];
-
-    return rows.map((row) => ({
-      product: products.find((p) => p.id === row.productId),
-      totalQuantity: Number(row.totalQuantity),
-      totalRevenue: Number(row.totalRevenue),
-      totalProfit: Number(row.totalProfit),
-      orderCount: Number(row.orderCount),
-    }));
+    return {
+      data: rows.map((row) => ({
+        productId: row.productId,
+        name: row.productName,
+        sku: row.sku,
+        brandName: row.brandName,
+        categoryName: row.categoryName,
+        unitSymbol: row.unitSymbol,
+        totalQuantity: Number(row.totalQuantity),
+        totalRevenue: Number(row.totalRevenue),
+        totalProfit: Number(row.totalProfit),
+        orderCount: Number(row.orderCount),
+      })),
+    };
   }
 
   // ── Least Selling / Slow-Moving Products ─────────────────
@@ -381,7 +391,7 @@ export class AnalyticsService {
 
   // ── Category Performance ──────────────────────────────────
   async getCategoryPerformance(shopId: string, startDate: string, endDate: string) {
-    return this.saleItemRepository
+    const data = await this.saleItemRepository
       .createQueryBuilder('si')
       .innerJoin('si.sale', 's', "s.shopId = :shopId AND s.saleDate BETWEEN :startDate AND :endDate AND s.status != 'cancelled'", {
         shopId,
@@ -397,8 +407,10 @@ export class AnalyticsService {
       .addSelect('SUM(si.profit)', 'totalProfit')
       .addSelect('COUNT(DISTINCT s.id)', 'orderCount')
       .groupBy('cat.id, cat.name')
-      .orderBy('"totalRevenue"', 'DESC')
+      .orderBy('SUM(si.subtotal)', 'DESC')
       .getRawMany();
+
+    return { data };
   }
 
   // ── Stock Valuation ───────────────────────────────────────

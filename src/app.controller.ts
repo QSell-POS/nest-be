@@ -9,8 +9,40 @@ import type { Response } from 'express';
 export class AppController {
   @Public()
   @Get('status')
-  getHello() {
-    return 'Hello World!';
+  getStatus() {
+    const now = new Date();
+
+    return {
+      status: 'ok',
+      message: 'Server is running 🚀',
+
+      time: {
+        iso: now.toISOString(),
+        local: now.toLocaleString(),
+        timestamp: now.getTime(),
+      },
+
+      uptime: {
+        seconds: Math.floor(process.uptime()),
+        human: this.formatUptime(process.uptime()),
+      },
+
+      system: {
+        nodeVersion: process.version,
+        platform: process.platform,
+        memoryUsage: process.memoryUsage(),
+      },
+
+      env: process.env.NODE_ENV || 'development',
+    };
+  }
+
+  private formatUptime(seconds: number) {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    return `${hrs}h ${mins}m ${secs}s`;
   }
 
   @Public()

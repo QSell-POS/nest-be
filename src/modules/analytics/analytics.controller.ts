@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { JwtAuthGuard, CurrentUser, RolesGuard } from '../../common/guards/auth.guard';
@@ -38,10 +32,7 @@ export class AnalyticsController {
 
   @Get('price-fluctuation/:productId')
   @ApiOperation({ summary: 'Price change history chart for a product' })
-  getPriceFluctuation(
-    @Param('productId') productId: string,
-    @CurrentUser() user: any,
-  ) {
+  getPriceFluctuation(@Param('productId') productId: string, @CurrentUser() user: any) {
     return this.analyticsService.getPriceFluctuationChart(productId, user.shopId);
   }
 
@@ -58,21 +49,14 @@ export class AnalyticsController {
 
   @Get('slow-moving')
   @ApiOperation({ summary: 'Slow-moving / stale inventory products' })
-  getSlowMoving(
-    @Query('days') days: number,
-    @Query('limit') limit: number,
-    @CurrentUser() user: any,
-  ) {
+  getSlowMoving(@Query('days') days: number, @Query('limit') limit: number, @CurrentUser() user: any) {
     return this.analyticsService.getSlowMovingProducts(user.shopId, days || 30, limit || 10);
   }
 
   @Get('sales-prediction')
   @ApiOperation({ summary: 'AI-style sales prediction using linear regression + seasonality' })
   @ApiQuery({ name: 'futureDays', required: false, example: 7 })
-  getSalesPrediction(
-    @Query('futureDays') futureDays: number,
-    @CurrentUser() user: any,
-  ) {
+  getSalesPrediction(@Query('futureDays') futureDays: number, @CurrentUser() user: any) {
     return this.analyticsService.getSalesPrediction(user.shopId, futureDays || 7);
   }
 
@@ -80,21 +64,13 @@ export class AnalyticsController {
   @ApiOperation({ summary: 'Full Profit & Loss report for a date range' })
   @ApiQuery({ name: 'startDate', required: true })
   @ApiQuery({ name: 'endDate', required: true })
-  getProfitLoss(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-    @CurrentUser() user: any,
-  ) {
+  getProfitLoss(@Query('startDate') startDate: string, @Query('endDate') endDate: string, @CurrentUser() user: any) {
     return this.analyticsService.getProfitLossReport(user.shopId, startDate, endDate);
   }
 
   @Get('category-performance')
   @ApiOperation({ summary: 'Revenue, quantity & profit by category' })
-  getCategoryPerformance(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-    @CurrentUser() user: any,
-  ) {
+  getCategoryPerformance(@Query('startDate') startDate: string, @Query('endDate') endDate: string, @CurrentUser() user: any) {
     return this.analyticsService.getCategoryPerformance(user.shopId, startDate, endDate);
   }
 
