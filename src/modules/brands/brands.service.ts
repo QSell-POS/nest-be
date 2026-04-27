@@ -53,4 +53,11 @@ export class BrandsService {
     await this.brands.softDelete(id);
     return { message: 'Brand deleted' };
   }
+
+  async restore(id: string, shopId: string) {
+    const brand = await this.brands.findOne({ where: { id, shopId }, withDeleted: true });
+    if (!brand) throw new NotFoundException('Brand not found');
+    await this.brands.restore(id);
+    return { message: 'Brand restored' };
+  }
 }

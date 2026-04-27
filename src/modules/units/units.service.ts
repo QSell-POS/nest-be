@@ -51,4 +51,11 @@ export class UnitsService {
     await this.repo.softDelete(id);
     return { message: 'Unit deleted' };
   }
+
+  async restore(id: string, shopId: string) {
+    const u = await this.repo.findOne({ where: { id, shopId }, withDeleted: true });
+    if (!u) throw new NotFoundException('Unit not found');
+    await this.repo.restore(id);
+    return { message: 'Unit restored' };
+  }
 }

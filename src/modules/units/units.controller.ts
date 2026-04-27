@@ -44,4 +44,11 @@ export class UnitsController {
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.remove(id, user.shopId);
   }
+
+  @Put(':id/restore')
+  @ApiOperation({ summary: 'Restore a soft-deleted unit' })
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  restore(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.restore(id, user.shopId);
+  }
 }

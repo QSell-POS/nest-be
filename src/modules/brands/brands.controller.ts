@@ -45,4 +45,11 @@ export class BrandsController {
   remove(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
     return this.brandsService.remove(id, user.shopId);
   }
+
+  @Put(':id/restore')
+  @ApiOperation({ summary: 'Restore a soft-deleted brand' })
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  restore(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
+    return this.brandsService.restore(id, user.shopId);
+  }
 }

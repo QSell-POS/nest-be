@@ -51,4 +51,11 @@ export class CategoriesController {
   remove(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
     return this.categoryService.remove(id, user.shopId);
   }
+
+  @Put(':id/restore')
+  @ApiOperation({ summary: 'Restore a soft-deleted category' })
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  restore(@Param('id', UuidParamPipe) id: string, @CurrentUser() user: any) {
+    return this.categoryService.restore(id, user.shopId);
+  }
 }

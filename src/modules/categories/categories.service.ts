@@ -102,4 +102,11 @@ export class CategoriesService {
       message: 'Category deleted successfully',
     };
   }
+
+  async restore(id: string, shopId: string) {
+    const c = await this.categories.findOne({ where: { id, shopId }, withDeleted: true });
+    if (!c) throw new NotFoundException('Category not found');
+    await this.categories.restore(id);
+    return { message: 'Category restored successfully' };
+  }
 }
