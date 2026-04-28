@@ -39,7 +39,7 @@ export class StockTransferController {
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Mark a transfer as in-transit (send)' })
   send(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.stockTransferService.send(id, user.shopId);
+    return this.stockTransferService.send(id, user.shopId, user.id);
   }
 
   @Post(':id/receive')
@@ -53,6 +53,6 @@ export class StockTransferController {
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Cancel a stock transfer' })
   cancel(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.stockTransferService.cancel(id, user.shopId);
+    return this.stockTransferService.cancel(id, user.shopId, user.id);
   }
 }

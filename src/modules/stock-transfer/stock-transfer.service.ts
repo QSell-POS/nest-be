@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { StockTransfer, StockTransferItem, TransferStatus } from './entities/stock-transfer.entity';
 import { CreateStockTransferDto, ReceiveTransferDto, StockTransferFilterDto } from './dto/stock-transfer.dto';
 import { buildPaginationMeta } from 'src/common/dto/pagination.dto';
+import { InventoryService } from '../inventory/inventory.service';
+import { InventoryMovementType } from '../inventory/entities/inventory-history.entity';
 
 @Injectable()
 export class StockTransferService {
@@ -12,11 +14,22 @@ export class StockTransferService {
     private readonly repo: Repository<StockTransfer>,
     @InjectRepository(StockTransferItem)
     private readonly itemRepo: Repository<StockTransferItem>,
+    private readonly inventoryService: InventoryService,
   ) {}
 
   async create(dto: CreateStockTransferDto, fromShopId: string, userId: string) {
     if (dto.toShopId === fromShopId) {
       throw new BadRequestException('Source and destination shops cannot be the same');
+    }
+
+    for (const item of dto.items) {
+      const inv = await this.inventoryService.getInventoryByProduct(item.productId, fromShopId).catch(() => null);
+      const available = inv ? Number(inv.quantityAvailable) : 0;
+      if (available < item.quantity) {
+        throw new BadRequestException(
+          `Insufficient stock for product ${item.productId}. Available: ${available}, requested: ${item.quantity}`,
+        );
+      }
     }
 
     const ref = `TRF-${Date.now()}`;
@@ -44,14 +57,30 @@ export class StockTransferService {
     return { data: result.data, message: 'Stock transfer created' };
   }
 
-  async send(id: string, shopId: string) {
+  async send(id: string, shopId: string, userId: string) {
     const t = await this.repo.findOne({
       where: { id, fromShopId: shopId, status: TransferStatus.PENDING },
+      relations: ['items'],
     });
     if (!t) throw new NotFoundException('Transfer not found or not in PENDING status');
 
+    for (const item of t.items) {
+      await this.inventoryService.adjustStock(
+        {
+          productId: item.productId,
+          quantity: Number(item.quantity),
+          movementType: InventoryMovementType.TRANSFER_OUT,
+          referenceId: t.id,
+          referenceType: 'stock_transfer',
+          notes: `Transfer ${t.referenceNumber} to shop ${t.toShopId}`,
+          performedBy: userId,
+        },
+        shopId,
+      );
+    }
+
     await this.repo.update(id, { status: TransferStatus.IN_TRANSIT, sentAt: new Date() });
-    return { data: null, message: 'Transfer sent' };
+    return { data: null, message: 'Transfer sent and stock deducted from source shop' };
   }
 
   async receive(id: string, dto: ReceiveTransferDto, toShopId: string, userId: string) {
@@ -62,9 +91,50 @@ export class StockTransferService {
     if (!t) throw new NotFoundException('Transfer not found or not in IN_TRANSIT status');
 
     for (const recv of dto.items) {
+      const item = t.items.find((i) => i.id === recv.transferItemId);
+      if (!item) {
+        throw new BadRequestException(`Transfer item ${recv.transferItemId} does not belong to this transfer`);
+      }
+      if (recv.receivedQuantity > Number(item.quantity)) {
+        throw new BadRequestException(
+          `Received quantity (${recv.receivedQuantity}) exceeds sent quantity (${item.quantity})`,
+        );
+      }
+
       await this.itemRepo.update(recv.transferItemId, {
         receivedQuantity: recv.receivedQuantity,
       });
+
+      if (recv.receivedQuantity > 0) {
+        await this.inventoryService.adjustStock(
+          {
+            productId: item.productId,
+            quantity: recv.receivedQuantity,
+            movementType: InventoryMovementType.TRANSFER_IN,
+            referenceId: t.id,
+            referenceType: 'stock_transfer',
+            notes: `Transfer ${t.referenceNumber} from shop ${t.fromShopId}`,
+            performedBy: userId,
+          },
+          toShopId,
+        );
+      }
+
+      const shortfall = Number(item.quantity) - recv.receivedQuantity;
+      if (shortfall > 0) {
+        await this.inventoryService.adjustStock(
+          {
+            productId: item.productId,
+            quantity: shortfall,
+            movementType: InventoryMovementType.TRANSFER_IN,
+            referenceId: t.id,
+            referenceType: 'stock_transfer_shortfall',
+            notes: `Transfer ${t.referenceNumber} shortfall returned to source`,
+            performedBy: userId,
+          },
+          t.fromShopId,
+        );
+      }
     }
 
     await this.repo.update(id, {
@@ -74,12 +144,13 @@ export class StockTransferService {
       ...(dto.notes ? { notes: dto.notes } : {}),
     });
 
-    return { data: null, message: 'Transfer received' };
+    return { data: null, message: 'Transfer received and stock added to destination shop' };
   }
 
-  async cancel(id: string, shopId: string) {
+  async cancel(id: string, shopId: string, userId: string) {
     const t = await this.repo.findOne({
       where: { id, fromShopId: shopId },
+      relations: ['items'],
     });
     if (!t) throw new NotFoundException('Transfer not found');
 
@@ -88,6 +159,23 @@ export class StockTransferService {
     }
     if (t.status === TransferStatus.CANCELLED) {
       throw new BadRequestException('Transfer is already cancelled');
+    }
+
+    if (t.status === TransferStatus.IN_TRANSIT) {
+      for (const item of t.items) {
+        await this.inventoryService.adjustStock(
+          {
+            productId: item.productId,
+            quantity: Number(item.quantity),
+            movementType: InventoryMovementType.TRANSFER_IN,
+            referenceId: t.id,
+            referenceType: 'stock_transfer_cancelled',
+            notes: `Transfer ${t.referenceNumber} cancelled, stock returned`,
+            performedBy: userId,
+          },
+          t.fromShopId,
+        );
+      }
     }
 
     await this.repo.update(id, { status: TransferStatus.CANCELLED });
