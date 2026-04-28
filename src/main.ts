@@ -38,7 +38,18 @@ async function bootstrap() {
   const apiPrefix = configService.get<string>('app.apiPrefix', 'api/v1');
 
   // Security
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", 'https://unpkg.com'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+        },
+      },
+    }),
+  );
 
   // Request logging
   app.use(pinoHttp.default({ level: process.env.LOG_LEVEL || 'info' }));
